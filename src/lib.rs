@@ -55,7 +55,7 @@ impl<'a, R: Read> Read for DownloadProgress<'a, R> {
 
 fn assemble_download_url(
     blueprint: &Blueprint,
-    req: Option<&VersionReq>,
+    req: Option<VersionReq>,
 ) -> Option<(String, Version)> {
     use just_versions::find_matching_version;
 
@@ -79,10 +79,7 @@ fn assemble_download_url(
         })
 }
 
-pub fn download<'a>(
-    blueprint: &'a Blueprint,
-    req: Option<&VersionReq>,
-) -> BoxedResult<DownloadInfo<'a>> {
+pub fn download(blueprint: &Blueprint, req: Option<VersionReq>) -> BoxedResult<DownloadInfo> {
     use indicatif::ProgressStyle;
     use log::{debug, info};
     use reqwest::header::{HeaderValue, CONTENT_LENGTH};
@@ -131,7 +128,7 @@ pub fn download<'a>(
     pb.finish();
     info!(
         "Download of '{}' has been completed.",
-        blueprint.package.get_first_alias()
+        blueprint.package.name.as_str()
     );
 
     Ok(DownloadInfo {
