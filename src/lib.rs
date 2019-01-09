@@ -1,5 +1,5 @@
 use indicatif::ProgressBar;
-use just_core::blueprint::{Blueprint, Package};
+use just_core::manifest::{Manifest, Package};
 use just_core::result::BoxedResult;
 use semver::{Version, VersionReq};
 use std::io::{self, Read};
@@ -54,13 +54,13 @@ impl<'a, R: Read> Read for DownloadProgress<'a, R> {
 }
 
 fn assemble_download_url(
-    blueprint: &Blueprint,
+    manifest: &Manifest,
     req: Option<VersionReq>,
 ) -> Option<(String, Version)> {
     use just_versions::find_matching_version;
 
-    let download_url = blueprint.download.url.as_str();
-    blueprint
+    let download_url = manifest.download.url.as_str();
+    manifest
         .versions
         .as_ref()
         .and_then(|versions| {
@@ -71,7 +71,7 @@ fn assemble_download_url(
             })
         })
         .or_else(|| {
-            blueprint.download.version.as_ref().and_then(|version| {
+            manifest.download.version.as_ref().and_then(|version| {
                 let url = download_url.replace("{version}", version.to_string().as_str());
 
                 Some((url, version.clone()))
@@ -79,7 +79,7 @@ fn assemble_download_url(
         })
 }
 
-pub fn download(blueprint: &Blueprint, req: Option<VersionReq>) -> BoxedResult<DownloadInfo> {
+pub fn download(manifest: &Manifest, req: Option<VersionReq>) -> BoxedResult<DownloadInfo> {
     use indicatif::ProgressStyle;
     use log::{debug, info};
     use reqwest::header::{HeaderValue, CONTENT_LENGTH};
@@ -87,7 +87,7 @@ pub fn download(blueprint: &Blueprint, req: Option<VersionReq>) -> BoxedResult<D
     use std::io::copy;
 
     let (download_url, version) =
-        assemble_download_url(blueprint, req).expect("No Download-URL or valid Version given");
+        assemble_download_url(manifest, req).expect("No Download-URL or valid Version given");
     info!("Downloading from {}...", download_url);
 
     let response = reqwest::get(&download_url)?;
@@ -128,11 +128,11 @@ pub fn download(blueprint: &Blueprint, req: Option<VersionReq>) -> BoxedResult<D
     pb.finish();
     info!(
         "Download of '{}' has been completed.",
-        blueprint.package.name.as_str()
+        manifest.package.name.as_str()
     );
 
     Ok(DownloadInfo {
-        package: &blueprint.package,
+        package: &manifest.package,
         version,
         size: download_size,
         compressed_path: download_path.compressed_path.to_owned(),
