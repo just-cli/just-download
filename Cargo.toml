@@ -5,8 +5,8 @@ authors = ["Randy Schütt <rswhite4@googlemail.com>"]
 edition = "2018"
 
 [dependencies]
-just-core = {path = "../just-core"}
-just-versions = {path = "../just-versions"}
+just-core = { git = "https://github.com/just-cli/just-core"}
+just-versions = { git = "https://github.com/just-cli/just-versions" }
 indicatif = "0.11.0"
 reqwest = "0.9.5"
 log = "0.4.6"

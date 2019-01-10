@@ -125,6 +125,7 @@ pub fn download(manifest: &Manifest, req: Option<VersionReq>) -> BoxedResult<Dow
     info!("Copy into {:?}", download_path.compressed_path);
 
     let download_size = copy(&mut source, &mut dest)?;
+
     pb.finish();
     info!(
         "Download of '{}' has been completed.",
